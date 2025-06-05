@@ -1,0 +1,116 @@
+.footer {
+    background-color: var(--color-background-alt);
+    padding: var(--spacing-3xl) 0;
+    margin-top: auto;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-light);
+    border-top: 1px solid var(--color-border);
+}
+
+.footer-content {
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-xl);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--spacing-2xl);
+}
+
+.footer-section h3 {
+    font-size: var(--font-size-base);
+    font-weight: 700;
+    margin-bottom: var(--spacing-md);
+    color: var(--color-text);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.footer-section p {
+    color: var(--color-text-light);
+    margin-bottom: var(--spacing-sm);
+    line-height: 1.7;
+}
+
+.footer-section p:last-child {
+    margin-bottom: 0;
+}
+
+.social-links {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-md);
+}
+
+.social-links a {
+    color: var(--color-text-light);
+    transition: color 0.3s ease, transform 0.2s ease;
+    font-size: var(--font-size-xl);
+    display: inline-flex;
+    align-items: center;
+}
+
+.social-links a:hover {
+    color: var(--color-primary);
+    transform: translateY(-4px);
+}
+
+.footer-bottom {
+    max-width: 1500px;
+    margin: var(--spacing-2xl) auto 0;
+    padding: var(--spacing-md) var(--spacing-xl);
+    text-align: center;
+    border-top: 1px solid var(--color-border);
+    color: var(--color-text-lighter);
+    font-size: var(--font-size-xs);
+    padding-top: var(--spacing-lg);
+}
+
+.footer-bottom p {
+    margin: 0;
+}
+
+@media (max-width: 1024px) {
+    .footer-content {
+        gap: var(--spacing-xl);
+        padding: 0 var(--spacing-lg);
+    }
+
+    .footer-bottom {
+        padding: var(--spacing-md) var(--spacing-lg);
+    }
+}
+
+@media (max-width: 768px) {
+    .footer-content {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-lg);
+        text-align: center;
+    }
+
+    .footer-section {
+        align-items: center;
+    }
+
+    .social-links {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .footer {
+        padding: var(--spacing-2xl) 0;
+    }
+
+    .footer-content {
+        padding: 0 var(--spacing-md);
+    }
+
+    .footer-bottom {
+        padding: var(--spacing-md) var(--spacing-md);
+    }
+
+    .social-links {
+        gap: var(--spacing-md);
+    }
+}
