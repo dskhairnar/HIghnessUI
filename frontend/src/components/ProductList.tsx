@@ -1,102 +1,102 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import ProductCard from './ProductCard';
-import { getProducts } from '@/services/api';
-import type { Product } from "../types";
+import type { Product } from '@/types/index';
+import styles from '../styles/productList.module.css';
 
 interface ProductListProps {
-    initialProducts?: Product[];
-    showLoadMore?: boolean;
     searchQuery?: string;
+    showLoadMore?: boolean;
 }
 
-export default function ProductList({ initialProducts = [], showLoadMore = true, searchQuery }: ProductListProps) {
-    const [products, setProducts] = useState<Product[]>(initialProducts);
-    const [loading, setLoading] = useState(!initialProducts.length);
+const ProductList: React.FC<ProductListProps> = ({ searchQuery = '', showLoadMore = true }) => {
+    const [products, setProducts] = useState<Product[]>([]);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
-    const [allFetchedProducts, setAllFetchedProducts] = useState<Product[]>(initialProducts);
 
-    const loadProducts = useCallback(async (pageNum: number) => {
-        try {
-            setLoading(true);
-            const response = await getProducts(pageNum);
-            const newProducts = response.data;
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                setLoading(true);
+                setError(null);
 
-            if (pageNum === 1) {
-                setAllFetchedProducts(newProducts);
-            } else {
-                setAllFetchedProducts(prev => [...prev, ...newProducts]);
+                const response = await fetch(`/api/products?page=${page}&search=${searchQuery}`);
+                const data = await response.json();
+
+                if (data.data) {
+                    setProducts(prevProducts =>
+                        page === 1 ? data.data : [...prevProducts, ...data.data]
+                    );
+                    setHasMore(data.meta.pagination.page < data.meta.pagination.pageCount);
+                } else {
+                    setError('Failed to load products');
+                }
+            } catch (err) {
+                console.error('Error fetching products:', err);
+                setError('Failed to load products');
+            } finally {
+                setLoading(false);
             }
+        };
 
-            setHasMore(newProducts.length > 0);
-        } catch (err) {
-            setError('Failed to load products');
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+        fetchProducts();
+    }, [page, searchQuery]);
 
-    useEffect(() => {
-        if (!initialProducts.length) {
-            loadProducts(1);
-        }
-    }, [initialProducts.length, loadProducts]);
+    const handleLoadMore = () => {
+        setPage(prevPage => prevPage + 1);
+    };
 
-    useEffect(() => {
-        if (searchQuery) {
-            const filtered = allFetchedProducts.filter(product => 
-                product.attributes.name.toLowerCase().includes(searchQuery.toLowerCase())
-            );
-            setProducts(filtered);
-            setHasMore(false);
-        } else {
-            setProducts(allFetchedProducts);
-        }
-    }, [searchQuery, allFetchedProducts]);
-
-    const handleLoadMore = useCallback(() => {
-        const nextPage = page + 1;
-        setPage(nextPage);
-        loadProducts(nextPage);
-    }, [page, loadProducts]);
-
-    const shouldShowLoadMoreButton = showLoadMore && hasMore && !searchQuery;
+    if (loading && page === 1) {
+        return (
+            <div className={styles.loading}>
+                <div className={styles.loadingSpinner}></div>
+                <p>Loading products...</p>
+            </div>
+        );
+    }
 
     if (error) {
-        return <div className="error-message">{error}</div>;
+        return (
+            <div className={styles.error}>
+                <p>{error}</p>
+                <button onClick={() => window.location.reload()} className={styles.retryButton}>
+                    Try Again
+                </button>
+            </div>
+        );
+    }
+
+    if (products.length === 0) {
+        return (
+            <div className={styles.empty}>
+                <p>No products found.</p>
+            </div>
+        );
     }
 
     return (
-        <div className="product-list">
-            <div className="product-grid">
+        <div className={styles.container}>
+            <div className={styles.grid}>
                 {products.map((product) => (
                     <ProductCard key={product.id} product={product} />
                 ))}
             </div>
-
-            {loading && <p>Loading products...</p>}
-            
-            {shouldShowLoadMoreButton && (
-                <div className="load-more-container">
+            {showLoadMore && hasMore && (
+                <div className={styles.loadMore}>
                     <button
-                        className="load-more-button"
                         onClick={handleLoadMore}
+                        className={styles.loadMoreButton}
                         disabled={loading}
                     >
                         {loading ? 'Loading...' : 'Load More'}
                     </button>
                 </div>
             )}
-             {!loading && products.length === 0 && searchQuery && (
-                <p>No products found matching your search.</p>
-            )}
-             {!loading && products.length === 0 && !searchQuery && !hasMore && (
-                <p>No products available.</p>
-            )}
         </div>
     );
-} 
+};
+
+export default ProductList; 

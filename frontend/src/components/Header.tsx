@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import styles from '../styles/header.module.css';
-import { getProductCategories, ProductCategory } from '../services/api';
+import { getProductCategories } from '@/services/api';
+import type { Category } from '@/services/api/types';
 
 interface HeaderProps {
     onSearch?: (query: string) => void;
@@ -14,7 +15,7 @@ const Header: React.FC<HeaderProps> = ({ onSearch }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
-    const [categories, setCategories] = useState<ProductCategory[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
     const [isProductsOpen, setIsProductsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -33,8 +34,8 @@ const Header: React.FC<HeaderProps> = ({ onSearch }) => {
             try {
                 setIsLoading(true);
                 setError(null);
-                const data = await getProductCategories();
-                setCategories(data);
+                const response = await getProductCategories();
+                setCategories(response.data);
             } catch (error) {
                 console.error('Error fetching categories:', error);
                 setError('Failed to load categories');

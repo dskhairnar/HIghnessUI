@@ -3,7 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { getImageUrl, getProductCategories, ProductCategory, extractDescriptionText } from '@/services/api';
+import { getProductCategories } from '@/services/api';
+import { CMS_BASE_URL } from '@/services/api/config';
+import type { Category } from '@/services/api/types';
 import styles from '../styles/categoryList.module.css';
 
 // Base64 encoded 1x1 transparent pixel
@@ -15,10 +17,10 @@ interface CategoryListProps {
 }
 
 const CategoryList: React.FC<CategoryListProps> = ({ onCategorySelect }) => {
-    const [categories, setCategories] = useState<ProductCategory[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [hoveredCategory, setHoveredCategory] = useState<ProductCategory | null>(null);
+    const [hoveredCategory, setHoveredCategory] = useState<Category | null>(null);
     const [isImageLoading, setIsImageLoading] = useState(true);
 
     useEffect(() => {
@@ -28,11 +30,11 @@ const CategoryList: React.FC<CategoryListProps> = ({ onCategorySelect }) => {
             try {
                 setLoading(true);
                 setError(null);
-                const data = await getProductCategories();
-                if (isMounted && data) {
-                    setCategories(data);
-                    if (data.length > 0) {
-                        setHoveredCategory(data[0]);
+                const response = await getProductCategories();
+                if (isMounted && response.data) {
+                    setCategories(response.data);
+                    if (response.data.length > 0) {
+                        setHoveredCategory(response.data[0]);
                     }
                 }
             } catch (err) {
@@ -54,7 +56,7 @@ const CategoryList: React.FC<CategoryListProps> = ({ onCategorySelect }) => {
         };
     }, []);
 
-    const handleMouseEnter = (category: ProductCategory) => {
+    const handleMouseEnter = (category: Category) => {
         setIsImageLoading(true);
         setHoveredCategory(category);
     };
@@ -63,8 +65,21 @@ const CategoryList: React.FC<CategoryListProps> = ({ onCategorySelect }) => {
         setIsImageLoading(false);
     };
 
-    const displayImageUrl = hoveredCategory?.images?.[0] ? getImageUrl(hoveredCategory.images[0]) : PLACEHOLDER_IMAGE;
-    const displayDescription = hoveredCategory ? extractDescriptionText(hoveredCategory.description) : '';
+    const getImageUrl = (category: Category) => {
+        const image = category.images[0]?.file[0];
+        if (!image) return PLACEHOLDER_IMAGE;
+        
+        // Try to get the best available format
+        const format = image.formats.medium || image.formats.small || image.formats.thumbnail;
+        const imageUrl = format ? format.url : image.url;
+        
+        // Prepend CMS base URL if the URL is relative
+        return imageUrl.startsWith('http') ? imageUrl : `${CMS_BASE_URL}${imageUrl}`;
+    };
+
+    const getDescription = (category: Category) => {
+        return category.description[0]?.children[0]?.text || 'No description available.';
+    };
 
     if (loading) {
         return (
@@ -104,21 +119,21 @@ const CategoryList: React.FC<CategoryListProps> = ({ onCategorySelect }) => {
                         </div>
                     )}
                     <Image
-                        key={displayImageUrl}
-                        src={displayImageUrl}
-                        alt={hoveredCategory?.images?.[0]?.altText || hoveredCategory?.title || 'Category Image'}
+                        key={hoveredCategory ? getImageUrl(hoveredCategory) : PLACEHOLDER_IMAGE}
+                        src={hoveredCategory ? getImageUrl(hoveredCategory) : PLACEHOLDER_IMAGE}
+                        alt={hoveredCategory?.images[0]?.altText || hoveredCategory?.title || 'Category Image'}
                         fill
                         style={{ objectFit: 'cover' }}
                         className={`${styles.displayImage} ${isImageLoading ? styles.imageLoading : ''}`}
                         onLoad={handleImageLoad}
-                        unoptimized={displayImageUrl === PLACEHOLDER_IMAGE}
+                        unoptimized={!hoveredCategory}
                         priority={true}
                     />
                 </div>
                 {hoveredCategory && (
                     <div className={styles.descriptionArea}>
                         <h3>{hoveredCategory.title}</h3>
-                        <p>{displayDescription || 'No description available.'}</p>
+                        <p>{getDescription(hoveredCategory)}</p>
                         <Link
                             href={`/products/${hoveredCategory.slug}`}
                             className={styles.exploreButton}
