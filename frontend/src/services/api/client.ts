@@ -70,4 +70,4 @@ export const createApiClient = (baseURL: string = '/api'): AxiosInstance => {
     return client;
 };
 
-export const apiClient = createApiClient(); 
+export const apiClient = createApiClient(API_CONFIG.baseURL); 

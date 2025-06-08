@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { getProductsByCategorySlug } from '@/services/api/productApi';
 import type { Product, ProductVersion } from '@/types/index';
 import styles from './page.module.css';
+import Link from 'next/link';
 
 // Base64 encoded 1x1 transparent pixel for placeholder
 const PLACEHOLDER_IMAGE = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
@@ -214,12 +215,12 @@ export default function CategoryProductsPage() {
                                 )}
 
                                 <div className={styles.productActions}>
-                                    <button
+                                    <Link
+                                        href={`/products/${params.categorySlug}/${product.slug}/versions`}
                                         className={styles.contactButton}
-                                        onClick={() => handleCheckVersions(product.id)}
                                     >
-                                        {selectedProductId === product.id ? 'Hide Versions' : 'Check Versions'}
-                                    </button>
+                                        Check Versions
+                                    </Link>
                                 </div>
 
                                 {selectedProductId === product.id && (

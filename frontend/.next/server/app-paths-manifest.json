@@ -1,4 +1,7 @@
 {
+  "/not-found": "app/not-found.js",
+  "/page": "app/page.js",
   "/products/[categorySlug]/page": "app/products/[categorySlug]/page.js",
-  "/page": "app/page.js"
+  "/products/[categorySlug]/[productSlug]/versions/page": "app/products/[categorySlug]/[productSlug]/versions/page.js",
+  "/products/[categorySlug]/[productSlug]/versions/[versionId]/page": "app/products/[categorySlug]/[productSlug]/versions/[versionId]/page.js"
 }

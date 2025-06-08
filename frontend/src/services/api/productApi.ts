@@ -1,22 +1,19 @@
 import { apiClient } from './client';
 import { API_CONFIG, DEFAULT_PAGINATION } from './config';
-import type { Product, ProductResponse, ProductVersionResponse } from '@/types/index';
+import type { Product, ProductResponse, ProductVersionResponse, SingleProductVersionResponse } from '@/types/index';
 
-export const getProductVersions = async (): Promise<ProductVersionResponse> => {
-    const [specsResponse, imagesResponse] = await Promise.all([
-        apiClient.get(`${API_CONFIG.endpoints.productVersions}?populate=specs`),
-        apiClient.get(`${API_CONFIG.endpoints.productVersions}?populate=productImages`)
-    ]);
-
-    const mergedData = specsResponse.data.data.map((version: any) => {
-        const imageVersion = imagesResponse.data.data.find((v: any) => v.id === version.id);
-        return {
-            ...version,
-            productImages: imageVersion?.productImages || []
-        };
+export const getProductVersions = async (productId: number): Promise<ProductVersionResponse> => {
+    const params = new URLSearchParams({
+        'filters[product][id][$eq]': productId.toString(),
+        'populate[specs][populate][spec_key]': 'true',
+        'populate[specs][populate][productVersion]': 'true',
+        'populate[productImages][populate]': '*'
     });
 
-    return { data: mergedData, meta: specsResponse.data.meta };
+    const response = await apiClient.get(
+        `${API_CONFIG.endpoints.productVersions}?${params.toString()}`
+    );
+    return response.data;
 };
 
 export const getProducts = async (
@@ -73,4 +70,18 @@ export const getFeaturedProducts = async (limit = DEFAULT_PAGINATION.limit): Pro
         `${API_CONFIG.endpoints.products}?${params.toString()}`
     );
     return response.data;
+};
+
+export const getProductVersionById = async (versionId: string): Promise<SingleProductVersionResponse> => {
+    const params = new URLSearchParams({
+        'filters[id][$eq]': versionId,
+        'populate[specs][populate][spec_key]': 'true',
+        'populate[specs][populate][productVersion]': 'true',
+        'populate[productImages][populate]': '*'
+    });
+
+    const response = await apiClient.get(
+        `${API_CONFIG.endpoints.productVersions}?${params.toString()}`
+    );
+    return response.data.data[0];
 }; 

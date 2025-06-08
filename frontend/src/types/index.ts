@@ -161,6 +161,11 @@ export interface ProductVersionResponse {
     };
 }
 
+export interface SingleProductVersionResponse {
+    data: ProductVersion;
+    meta: {};
+}
+
 export interface SpecKey {
     id: number;
     name: string;
